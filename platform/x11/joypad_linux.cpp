@@ -49,6 +49,12 @@
 static const char *ignore_str = "/dev/input/js";
 #endif
 
+#ifndef __GLIBC__
+#define __bswap_16 __bswap16
+#define __bswap_32 __bswap32
+#define __bswap_64 __bswap64
+#endif
+
 JoypadLinux::Joypad::Joypad() {
 	fd = -1;
 	dpad = 0;
