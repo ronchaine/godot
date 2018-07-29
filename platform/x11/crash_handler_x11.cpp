@@ -31,9 +31,6 @@
 #ifdef DEBUG_ENABLED
 // since this is written for glibc, it won't work on other
 // c libraries
-#ifdef __GLIBC__
-#define CRASH_HANDLER_ENABLED 1
-#endif
 #endif
 
 #include "crash_handler_x11.h"
