@@ -450,16 +450,41 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 			*r_valid = true;
 		return;
 #endif
-	} else {
-		//something inside the object... :|
-		bool success = _setv(p_name, p_value);
-		if (success) {
+	}
+
+	//something inside the object... :|
+	bool success = _setv(p_name, p_value);
+	if (success) {
+		if (r_valid)
+			*r_valid = true;
+		return;
+	}
+
+	{
+		bool valid;
+		setvar(p_name, p_value, &valid);
+		if (valid) {
 			if (r_valid)
 				*r_valid = true;
 			return;
 		}
-		setvar(p_name, p_value, r_valid);
 	}
+
+#ifdef TOOLS_ENABLED
+	if (script_instance) {
+		bool valid;
+		script_instance->property_set_fallback(p_name, p_value, &valid);
+		if (valid) {
+			if (r_valid)
+				*r_valid = true;
+			return;
+		}
+	}
+#endif
+
+	if (r_valid)
+		*r_valid = false;
+	return;
 }
 
 Variant Object::get(const StringName &p_name, bool *r_valid) const {
@@ -513,8 +538,33 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 				*r_valid = true;
 			return ret;
 		}
+
 		//if nothing else, use getvar
-		return getvar(p_name, r_valid);
+		{
+			bool valid;
+			ret = getvar(p_name, &valid);
+			if (valid) {
+				if (r_valid)
+					*r_valid = true;
+				return ret;
+			}
+		}
+
+#ifdef TOOLS_ENABLED
+		if (script_instance) {
+			bool valid;
+			ret = script_instance->property_get_fallback(p_name, &valid);
+			if (valid) {
+				if (r_valid)
+					*r_valid = true;
+				return ret;
+			}
+		}
+#endif
+
+		if (r_valid)
+			*r_valid = false;
+		return Variant();
 	}
 }
 
@@ -601,8 +651,12 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) // can still be set, but this is for userfriendlyness
+	if (!is_class("Script")) { // can still be set, but this is for userfriendlyness
+#ifdef TOOLS_ENABLED
+		p_list->push_back(PropertyInfo(Variant::NIL, "Script", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
+#endif
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NONZERO));
+	}
 #ifdef TOOLS_ENABLED
 	if (editor_section_folding.size()) {
 		p_list->push_back(PropertyInfo(Variant::ARRAY, CoreStringNames::get_singleton()->_sections_unfolded, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
@@ -814,8 +868,8 @@ Variant Object::callv(const StringName &p_method, const Array &p_args) {
 	argptrs.resize(p_args.size());
 
 	for (int i = 0; i < p_args.size(); i++) {
-		args[i] = p_args[i];
-		argptrs[i] = &args[i];
+		args.write[i] = p_args[i];
+		argptrs.write[i] = &args[i];
 	}
 
 	Variant::CallError ce;
@@ -975,9 +1029,14 @@ void Object::set_script(const RefPtr &p_script) {
 	script = p_script;
 	Ref<Script> s(script);
 
-	if (!s.is_null() && s->can_instance()) {
-		OBJ_DEBUG_LOCK
-		script_instance = s->instance_create(this);
+	if (!s.is_null()) {
+		if (s->can_instance()) {
+			OBJ_DEBUG_LOCK
+			script_instance = s->instance_create(this);
+		} else if (Engine::get_singleton()->is_editor_hint()) {
+			OBJ_DEBUG_LOCK
+			script_instance = s->placeholder_instance_create(this);
+		}
 	}
 
 	_change_notify("script");
@@ -1178,10 +1237,10 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			bind_mem.resize(p_argcount + c.binds.size());
 
 			for (int j = 0; j < p_argcount; j++) {
-				bind_mem[j] = p_args[j];
+				bind_mem.write[j] = p_args[j];
 			}
 			for (int j = 0; j < c.binds.size(); j++) {
-				bind_mem[p_argcount + j] = &c.binds[j];
+				bind_mem.write[p_argcount + j] = &c.binds[j];
 			}
 
 			args = (const Variant **)bind_mem.ptr();
@@ -1205,7 +1264,15 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			}
 		}
 
-		if (c.flags & CONNECT_ONESHOT) {
+		bool disconnect = c.flags & CONNECT_ONESHOT;
+#ifdef TOOLS_ENABLED
+		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
+			//this signal was connected from the editor, and is being edited. just dont disconnect for now
+			disconnect = false;
+		}
+#endif
+		if (disconnect) {
+
 			_ObjectSignalDisconnectData dd;
 			dd.signal = p_name;
 			dd.target = target;

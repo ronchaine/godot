@@ -90,7 +90,7 @@ bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) co
 	return false;
 }
 
-Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) {
+Ref<Resource> EditorResourceConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
 	if (get_script_instance())
 		return get_script_instance()->call("_convert", p_resource);
@@ -287,7 +287,11 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					Object *obj = ClassDB::instance(intype);
 
 					if (!obj) {
-						obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+						if (ScriptServer::is_global_class(intype)) {
+							obj = EditorNode::get_editor_data().script_class_instance(intype);
+						} else {
+							obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+						}
 					}
 
 					ERR_BREAK(!obj);
@@ -1132,7 +1136,11 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 		Object *obj = ClassDB::instance(intype);
 
 		if (!obj) {
-			obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+			if (ScriptServer::is_global_class(intype)) {
+				obj = EditorNode::get_editor_data().script_class_instance(intype);
+			} else {
+				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+			}
 		}
 
 		ERR_FAIL_COND(!obj);
@@ -1334,7 +1342,11 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					Object *obj = ClassDB::instance(intype);
 
 					if (!obj) {
-						obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+						if (ScriptServer::is_global_class(intype)) {
+							obj = EditorNode::get_editor_data().script_class_instance(intype);
+						} else {
+							obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+						}
 					}
 
 					ERR_BREAK(!obj);
@@ -4394,7 +4406,7 @@ PropertyEditor::PropertyEditor() {
 	use_filter = false;
 	subsection_selectable = false;
 	property_selectable = false;
-	show_type_icons = EDITOR_DEF("interface/editor/show_type_icons", false);
+	show_type_icons = false; // TODO: need to reimplement it to work with the new inspector
 }
 
 PropertyEditor::~PropertyEditor() {

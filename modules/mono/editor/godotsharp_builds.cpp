@@ -64,6 +64,7 @@ String _find_build_engine_on_unix(const String &p_name) {
 	const char *locations[] = {
 #ifdef OSX_ENABLED
 		"/Library/Frameworks/Mono.framework/Versions/Current/bin/",
+		"/usr/local/var/homebrew/linked/mono/bin/",
 #endif
 		"/opt/novell/mono/bin/"
 	};
@@ -209,6 +210,8 @@ bool GodotSharpBuilds::build_api_sln(const String &p_name, const String &p_api_s
 
 	if (!FileAccess::exists(api_assembly_file)) {
 		MonoBuildInfo api_build_info(api_sln_file, p_config);
+		// TODO Replace this global NoWarn with '#pragma warning' directives on generated files,
+		// once we start to actively document manually maintained C# classes
 		api_build_info.custom_props.push_back("NoWarn=1591"); // Ignore missing documentation warnings
 
 		if (!GodotSharpBuilds::get_singleton()->build(api_build_info)) {

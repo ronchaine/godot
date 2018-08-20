@@ -56,6 +56,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/pane_drag.h"
+#include "editor/plugin_config_dialog.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_export.h"
 #include "editor/project_settings_editor.h"
@@ -154,6 +155,7 @@ private:
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SCENE_SETTINGS,
 		RUN_SETTINGS,
+		RUN_PROJECT_DATA_FOLDER,
 		RUN_PROJECT_MANAGER,
 		RUN_FILE_SERVER,
 		RUN_LIVE_DEBUG,
@@ -164,11 +166,12 @@ private:
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
 		SETTINGS_UPDATE_SPINNER_HIDE,
-		SETTINGS_EXPORT_PREFERENCES,
 		SETTINGS_PREFERENCES,
 		SETTINGS_LAYOUT_SAVE,
 		SETTINGS_LAYOUT_DELETE,
 		SETTINGS_LAYOUT_DEFAULT,
+		SETTINGS_EDITOR_DATA_FOLDER,
+		SETTINGS_EDITOR_CONFIG_FOLDER,
 		SETTINGS_MANAGE_EXPORT_TEMPLATES,
 		SETTINGS_PICK_MAIN_SCENE,
 		SETTINGS_TOGGLE_FULLSCREEN,
@@ -183,6 +186,8 @@ private:
 		HELP_COMMUNITY,
 		HELP_ABOUT,
 
+		SET_VIDEO_DRIVER_SAVE_AND_RESTART,
+
 		IMPORT_PLUGIN_BASE = 100,
 
 		TOOL_MENU_BASE = 1000
@@ -195,6 +200,13 @@ private:
 	Control *gui_base;
 	VBoxContainer *main_vbox;
 	PanelContainer *play_button_panel;
+	OptionButton *video_driver;
+
+	ConfirmationDialog *video_restart_dialog;
+
+	int video_driver_current;
+	String video_driver_request;
+	void _video_driver_selected(int);
 
 	//split
 
@@ -212,6 +224,7 @@ private:
 	//main tabs
 
 	Tabs *scene_tabs;
+	PopupMenu *scene_tabs_context_menu;
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
 	int tab_closing;
@@ -244,6 +257,8 @@ private:
 	ToolButton *play_custom_scene_button;
 	ToolButton *search_button;
 	TextureProgress *audio_vu;
+
+	PluginConfigDialog *plugin_config_dialog;
 
 	RichTextLabel *load_errors;
 	AcceptDialog *load_error_dialog;
@@ -377,7 +392,11 @@ private:
 
 	PanelContainer *bottom_panel;
 	HBoxContainer *bottom_panel_hb;
+	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
+	ToolButton *bottom_panel_raise;
+
+	void _bottom_panel_raise_toggled(bool);
 
 	EditorInterface *editor_interface;
 
@@ -399,6 +418,8 @@ private:
 	void _menu_option_confirm(int p_option, bool p_confirmed);
 	void _tool_menu_option(int p_idx);
 	void _update_debug_options();
+
+	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);
@@ -741,6 +762,8 @@ public:
 	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
+
+	void save_all_scenes_and_restart();
 
 	void dim_editor(bool p_dimming);
 
