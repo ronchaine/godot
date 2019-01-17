@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,6 @@
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "modules/svg/image_loader_svg.h"
-#include "time.h"
 
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
@@ -79,12 +78,6 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	style->set_grow_end(p_grow_end);
 	style->set_thickness(p_thickness);
 	style->set_vertical(p_vertical);
-	return style;
-}
-
-static Ref<StyleBoxFlat> change_border_color(Ref<StyleBoxFlat> p_style, Color p_color) {
-	Ref<StyleBoxFlat> style = p_style->duplicate();
-	style->set_border_color_all(p_color);
 	return style;
 }
 
@@ -199,8 +192,6 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	exceptions.push_back("StatusWarning");
 	exceptions.push_back("NodeWarning");
 
-	clock_t begin_time = clock();
-
 	ImageLoaderSVG::set_convert_colors(&dark_icon_color_dictionary);
 
 	// generate icons
@@ -235,10 +226,8 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	}
 
 	ImageLoaderSVG::set_convert_colors(NULL);
-
-	clock_t end_time = clock();
 #else
-	print_line("Sorry no icons for you");
+	print_line("SVG support disabled, editor icons won't be rendered.");
 #endif
 }
 
@@ -260,11 +249,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	bool use_gn_headers = EDITOR_DEF("interface/theme/use_graph_node_headers", false);
 
-	Color script_bg_color = EDITOR_DEF("text_editor/highlighting/background_color", Color(0, 0, 0, 0));
-
 	Color preset_accent_color;
 	Color preset_base_color;
-	float preset_contrast;
+	float preset_contrast = 0;
 
 	// Please, use alphabet order if you've added new theme here(After "Default" and "Custom")
 
@@ -364,18 +351,18 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("mono_color", "Editor", mono_color);
 
-	Color success_color = accent_color.linear_interpolate(Color(0.2, 1, 0.2), 0.6) * 1.2;
-	Color warning_color = accent_color.linear_interpolate(Color(1, 1, 0), 0.7) * 1.0;
-	Color error_color = accent_color.linear_interpolate(Color(1, 0, 0), 0.8) * 1.7;
+	Color success_color = Color(0.45, 0.95, 0.5);
+	Color warning_color = Color(1, 0.87, 0.4);
+	Color error_color = Color(1, 0.47, 0.42);
 	Color property_color = font_color.linear_interpolate(Color(0.5, 0.5, 0.5), 0.5);
 
 	if (!dark_theme) {
-		// yellow on white themes is a P.I.T.A.
-		warning_color = accent_color.linear_interpolate(Color(0.9, 0.7, 0), 0.9);
-		warning_color = warning_color.linear_interpolate(mono_color, 0.2);
-		success_color = success_color.linear_interpolate(mono_color, 0.2);
-		error_color = error_color.linear_interpolate(mono_color, 0.2);
+		// Darken some colors to be readable on a light background
+		success_color = success_color.linear_interpolate(mono_color, 0.35);
+		warning_color = warning_color.linear_interpolate(mono_color, 0.35);
+		error_color = error_color.linear_interpolate(mono_color, 0.25);
 	}
+
 	theme->set_color("success_color", "Editor", success_color);
 	theme->set_color("warning_color", "Editor", warning_color);
 	theme->set_color("error_color", "Editor", error_color);
@@ -389,7 +376,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	//Register icons + font
 
 	// the resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons
-	if (p_theme != NULL && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
+	if (p_theme != NULL && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
 		// register already generated icons
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
@@ -491,8 +478,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_selected->set_bg_color(tab_color);
 
 	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
-	style_tab_unselected->set_draw_center(false);
-	style_tab_unselected->set_border_width_all(0);
+	style_tab_unselected->set_bg_color(dark_color_1);
+	style_tab_unselected->set_border_color_all(dark_color_2);
 
 	// Editor background
 	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
@@ -648,7 +635,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon("GuiVisibilityHidden", "EditorIcons"));
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
-	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
 
 	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1, 2, 0, 0, 0);
 	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
@@ -747,10 +734,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_color_selected", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
-	theme->set_constant("vseparation", "ItemList", 2 * EDSCALE);
-	theme->set_constant("hseparation", "ItemList", 2 * EDSCALE);
+	theme->set_constant("vseparation", "ItemList", 3 * EDSCALE);
+	theme->set_constant("hseparation", "ItemList", 3 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", default_margin_size * EDSCALE);
-	theme->set_constant("line_separation", "ItemList", 2 * EDSCALE);
+	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
 	// Tabs & TabContainer
 	theme->set_stylebox("tab_fg", "TabContainer", style_tab_selected);
@@ -945,6 +932,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
+	float v = MAX(border_size * EDSCALE, 1.0);
+	style_tooltip->set_default_margin(MARGIN_LEFT, v);
+	style_tooltip->set_default_margin(MARGIN_TOP, v);
+	style_tooltip->set_default_margin(MARGIN_RIGHT, v);
+	style_tooltip->set_default_margin(MARGIN_BOTTOM, v);
 	style_tooltip->set_bg_color(Color(mono_color.r, mono_color.g, mono_color.b, 0.9));
 	style_tooltip->set_border_width_all(border_width);
 	style_tooltip->set_border_color_all(mono_color);
@@ -1002,6 +994,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphsbposition->set_draw_center(false);
 	graphsbposition->set_border_color_all(error_color);
 	graphsbposition->set_shadow_color(error_color * Color(1.0, 1.0, 1.0, 0.2));
+	Ref<StyleBoxFlat> smgraphsb = make_flat_stylebox(Color(mv, mv, mv, 0.7), gn_margin_side, 24, gn_margin_side, 5);
+	smgraphsb->set_border_width_all(border_width);
+	smgraphsb->set_border_color_all(Color(mv2, mv2, mv2, 0.9));
+	Ref<StyleBoxFlat> smgraphsbselected = make_flat_stylebox(Color(mv, mv, mv, 0.9), gn_margin_side, 24, gn_margin_side, 5);
+	smgraphsbselected->set_border_width_all(border_width);
+	smgraphsbselected->set_border_color_all(Color(accent_color.r, accent_color.g, accent_color.b, 0.9));
+	smgraphsbselected->set_shadow_size(8 * EDSCALE);
+	smgraphsbselected->set_shadow_color(shadow_color);
 
 	if (use_gn_headers) {
 		graphsb->set_border_width(MARGIN_TOP, 24 * EDSCALE);
@@ -1016,6 +1016,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("commentfocus", "GraphNode", graphsbcommentselected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
 	theme->set_stylebox("position", "GraphNode", graphsbposition);
+	theme->set_stylebox("state_machine_frame", "GraphNode", smgraphsb);
+	theme->set_stylebox("state_machine_selectedframe", "GraphNode", smgraphsbselected);
 
 	Color default_node_color = Color(mv2, mv2, mv2);
 	theme->set_color("title_color", "GraphNode", default_node_color);
@@ -1024,6 +1026,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
 	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
+	theme->set_constant("title_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
@@ -1064,8 +1067,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float mono_value = mono_color.r;
 	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
 	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
-	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.5);
-	const Color alpha4 = Color(mono_value, mono_value, mono_value, 0.7);
+	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.7);
 
 	// editor main color
 	const Color main_color = Color::html(dark_theme ? "#57b3ff" : "#0480ff");
@@ -1099,9 +1101,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color member_variable_color = main_color.linear_interpolate(mono_color, 0.6);
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
 	const Color breakpoint_color = error_color;
-	const Color code_folding_color = alpha4;
+	const Color code_folding_color = alpha3;
 	const Color search_result_color = alpha1;
-	const Color search_result_border_color = alpha4;
+	const Color search_result_border_color = alpha3;
 
 	EditorSettings *setting = EditorSettings::get_singleton();
 	String text_editor_color_theme = setting->get("text_editor/theme/color_theme");

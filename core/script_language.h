@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef SCRIPT_LANGUAGE_H
 #define SCRIPT_LANGUAGE_H
 
-#include "io/multiplayer_api.h"
-#include "map.h"
-#include "pair.h"
-#include "resource.h"
+#include "core/io/multiplayer_api.h"
+#include "core/map.h"
+#include "core/pair.h"
+#include "core/resource.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -127,6 +128,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
+	virtual bool is_valid() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
 
@@ -143,6 +145,8 @@ public:
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants) {}
 	virtual void get_members(Set<StringName> *p_constants) {}
+
+	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
 	Script() {}
 };
@@ -311,6 +315,8 @@ public:
 
 	virtual void *alloc_instance_binding_data(Object *p_object) { return NULL; } //optional, not used by all languages
 	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
+	virtual void refcount_incremented_instance_binding(Object *p_object) {} //optional, not used by all languages
+	virtual bool refcount_decremented_instance_binding(Object *p_object) { return true; } //return true if it can die //optional, not used by all languages
 
 	virtual void frame();
 
@@ -329,8 +335,6 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 	Map<StringName, Variant> values;
 	ScriptLanguage *language;
 	Ref<Script> script;
-
-	bool build_failed;
 
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value);
@@ -357,13 +361,10 @@ public:
 
 	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
 
-	void set_build_failed(bool p_build_failed) { build_failed = p_build_failed; }
-	bool get_build_failed() const { return build_failed; }
-
 	virtual bool is_placeholder() const { return true; }
 
-	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid);
-	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid);
+	virtual void property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid = NULL);
+	virtual Variant property_get_fallback(const StringName &p_name, bool *r_valid = NULL);
 
 	virtual MultiplayerAPI::RPCMode get_rpc_mode(const StringName &p_method) const { return MultiplayerAPI::RPC_MODE_DISABLED; }
 	virtual MultiplayerAPI::RPCMode get_rset_mode(const StringName &p_variable) const { return MultiplayerAPI::RPC_MODE_DISABLED; }

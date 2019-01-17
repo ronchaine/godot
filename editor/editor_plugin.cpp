@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "scene/3d/camera.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/visual_server.h"
+
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 
 	Vector<Ref<Mesh> > meshes;
@@ -104,14 +105,12 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 			continue;
 		}
 		AABB aabb = mesh->get_aabb();
-		print_line("aabb: " + aabb);
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
 		aabb.position -= ofs;
 		Transform xform;
 		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math_PI * 0.25);
 		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.25) * xform.basis;
 		AABB rot_aabb = xform.xform(aabb);
-		print_line("rot_aabb: " + rot_aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
 			textures.push_back(Ref<Texture>());
@@ -119,7 +118,6 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		}
 		m = 1.0 / m;
 		m *= 0.5;
-		print_line("scale: " + rtos(m));
 		xform.basis.scale(Vector3(m, m, m));
 		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
 		xform.origin.z -= rot_aabb.size.z * 2;
@@ -133,7 +131,6 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		Ref<ImageTexture> it(memnew(ImageTexture));
 		it->create_from_image(img);
 
-		//print_line("loaded image, size: "+rtos(m)+" dist: "+rtos(dist)+" empty?"+itos(img.empty())+" w: "+itos(it->get_width())+" h: "+itos(it->get_height()));
 		VS::get_singleton()->free(inst);
 
 		textures.push_back(it);
@@ -276,7 +273,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
 	ClassDB::bind_method(D_METHOD("get_editor_viewport"), &EditorInterface::get_editor_viewport);
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
-	ClassDB::bind_method(D_METHOD("select_file", "p_file"), &EditorInterface::select_file);
+	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
@@ -353,10 +350,16 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_SPATIAL_EDITOR_SIDE: {
+		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
 
 			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
+
+		} break;
+		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
+
+			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
@@ -369,10 +372,16 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 			CanvasItemEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_CANVAS_EDITOR_SIDE: {
+		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT: {
 
 			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
+
+		} break;
+		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
+
+			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
@@ -403,7 +412,8 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 			SpatialEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_SPATIAL_EDITOR_SIDE: {
+		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT:
+		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
 
 			SpatialEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
@@ -418,7 +428,8 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 			CanvasItemEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
-		case CONTAINER_CANVAS_EDITOR_SIDE: {
+		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT:
+		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
 
 			CanvasItemEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
@@ -464,7 +475,6 @@ void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
-	if (scn_root == NULL) return;
 	emit_signal("scene_changed", scn_root);
 }
 
@@ -493,17 +503,17 @@ bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void EditorPlugin::forward_draw_over_viewport(Control *p_overlay) {
+void EditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_draw_over_viewport")) {
-		get_script_instance()->call("forward_draw_over_viewport", p_overlay);
+	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_draw_over_viewport")) {
+		get_script_instance()->call("forward_canvas_draw_over_viewport", p_overlay);
 	}
 }
 
-void EditorPlugin::forward_force_draw_over_viewport(Control *p_overlay) {
+void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_force_draw_over_viewport")) {
-		get_script_instance()->call("forward_force_draw_over_viewport", p_overlay);
+	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_force_draw_over_viewport")) {
+		get_script_instance()->call("forward_canvas_force_draw_over_viewport", p_overlay);
 	}
 }
 
@@ -512,7 +522,7 @@ int EditorPlugin::update_overlays() const {
 
 	if (SpatialEditor::get_singleton()->is_visible()) {
 		int count = 0;
-		for (int i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
+		for (uint32_t i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
 			SpatialEditorViewport *vp = SpatialEditor::get_singleton()->get_editor_viewport(i);
 			if (vp->is_visible()) {
 				vp->update_surface();
@@ -534,6 +544,20 @@ bool EditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEv
 	}
 
 	return false;
+}
+
+void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {
+
+	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_draw_over_viewport")) {
+		get_script_instance()->call("forward_spatial_draw_over_viewport", p_overlay);
+	}
+}
+
+void EditorPlugin::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
+
+	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_force_draw_over_viewport")) {
+		get_script_instance()->call("forward_spatial_force_draw_over_viewport", p_overlay);
+	}
 }
 String EditorPlugin::get_name() const {
 
@@ -658,6 +682,14 @@ void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporte
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
+void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
+	SpatialEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
+}
+
+void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
+	SpatialEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
+}
+
 void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
 	EditorInspector::add_inspector_plugin(p_plugin);
 }
@@ -672,6 +704,34 @@ void EditorPlugin::add_scene_import_plugin(const Ref<EditorSceneImporter> &p_imp
 
 void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_importer) {
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
+}
+
+int find(const PoolStringArray &a, const String &v) {
+	PoolStringArray::Read r = a.read();
+	for (int j = 0; j < a.size(); ++j) {
+		if (r[j] == v) {
+			return j;
+		}
+	}
+	return -1;
+}
+
+void EditorPlugin::enable_plugin() {
+	// Called when the plugin gets enabled in project settings, after it's added to the tree.
+	// You can implement it to register autoloads.
+
+	if (get_script_instance() && get_script_instance()->has_method("enable_plugin")) {
+		get_script_instance()->call("enable_plugin");
+	}
+}
+
+void EditorPlugin::disable_plugin() {
+	// Last function called when the plugin gets disabled in project settings.
+	// Implement it to cleanup things from the project, such as unregister autoloads.
+
+	if (get_script_instance() && get_script_instance()->has_method("disable_plugin")) {
+		get_script_instance()->call("disable_plugin");
+	}
 }
 
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
@@ -750,6 +810,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_scene_import_plugin", "scene_importer"), &EditorPlugin::remove_scene_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPlugin::add_export_plugin);
 	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPlugin::remove_export_plugin);
+	ClassDB::bind_method(D_METHOD("add_spatial_gizmo_plugin", "plugin"), &EditorPlugin::add_spatial_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("remove_spatial_gizmo_plugin", "plugin"), &EditorPlugin::remove_spatial_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPlugin::add_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
@@ -759,8 +821,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "get_plugin_icon"));
@@ -777,6 +839,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "build"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("enable_plugin"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("disable_plugin"));
 
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
@@ -785,10 +849,12 @@ void EditorPlugin::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(CONTAINER_TOOLBAR);
 	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_MENU);
-	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_SIDE);
+	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_SIDE_LEFT);
+	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT);
 	BIND_ENUM_CONSTANT(CONTAINER_SPATIAL_EDITOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_MENU);
-	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE);
+	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_LEFT);
+	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_SIDE_RIGHT);
 	BIND_ENUM_CONSTANT(CONTAINER_CANVAS_EDITOR_BOTTOM);
 	BIND_ENUM_CONSTANT(CONTAINER_PROPERTY_EDITOR_BOTTOM);
 
@@ -803,11 +869,11 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 }
 
-EditorPlugin::EditorPlugin() {
-	undo_redo = NULL;
-	input_event_forwarding_always_enabled = false;
-	force_draw_over_forwarding_enabled = false;
-	last_main_screen_name = "";
+EditorPlugin::EditorPlugin() :
+		undo_redo(NULL),
+		input_event_forwarding_always_enabled(false),
+		force_draw_over_forwarding_enabled(false),
+		last_main_screen_name("") {
 }
 
 EditorPlugin::~EditorPlugin() {

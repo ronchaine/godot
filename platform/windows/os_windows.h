@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 #include "context_gl_win.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "crash_handler_win.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/win_midi.h"
-#include "os/input.h"
-#include "os/os.h"
 #include "power_windows.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -93,6 +93,7 @@ class OS_Windows : public OS {
 	HDC hDC; // Private GDI Device Context
 	HINSTANCE hInstance; // Holds The Instance Of The Application
 	HWND hWnd;
+	Point2 last_pos;
 
 	HBITMAP hBitmap; //DIB section for layered window
 	uint8_t *dib_data;
@@ -125,6 +126,7 @@ class OS_Windows : public OS {
 	bool force_quit;
 	bool window_has_focus;
 	uint32_t last_button_state;
+	bool use_raw_input;
 
 	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
@@ -156,7 +158,9 @@ class OS_Windows : public OS {
 
 	void _update_window_style(bool repaint = true);
 
-	// functions used by main to initialize/deintialize the OS
+	void _set_mouse_mode_impl(MouseMode p_mode);
+
+	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual int get_current_video_driver() const;
 
@@ -250,6 +254,7 @@ public:
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
+	virtual uint64_t get_system_time_msecs() const;
 
 	virtual bool can_draw() const;
 	virtual Error set_cwd(const String &p_cwd);

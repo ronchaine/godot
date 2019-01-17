@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,12 +91,13 @@ public:
 
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
 		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
-		RPC_MODE_SYNC, // Using rpc() on it will call method / set property in all remote peers and locally
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_SLAVE, // Using rpc() on it will call method for all slaves
-		RPC_MODE_REMOTESYNC, // Same as RPC_MODE_SYNC, compatibility
+		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+		RPC_MODE_SLAVE = RPC_MODE_PUPPET, // Deprecated, same as puppet
+		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
+		RPC_MODE_SYNC = RPC_MODE_REMOTESYNC, // Deprecated. Same as RPC_MODE_REMOTESYNC
 		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
-		RPC_MODE_SLAVESYNC, // Using rpc() on it will call method / set property in all slave peers and locally
+		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
 	};
 
 	void poll();

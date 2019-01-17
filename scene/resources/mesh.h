@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "resource.h"
+#include "core/math/triangle_mesh.h"
+#include "core/resource.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape.h"
 #include "servers/visual_server.h"
-#include "triangle_mesh.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -44,11 +44,10 @@ class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	mutable Vector<Vector3> debug_lines;
 	Size2 lightmap_size_hint;
 
 protected:
-	void _clear_triangle_mesh() const;
-
 	static void _bind_methods();
 
 public:
@@ -146,7 +145,7 @@ public:
 
 	void set_lightmap_size_hint(const Vector2 &p_size);
 	Size2 get_lightmap_size_hint() const;
-	void clear_cache();
+	void clear_cache() const;
 
 	Mesh();
 };

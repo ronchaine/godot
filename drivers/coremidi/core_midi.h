@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,11 @@
 #ifndef CORE_MIDI_H
 #define CORE_MIDI_H
 
-#include <stdio.h>
+#include "core/os/midi_driver.h"
+#include "core/vector.h"
 
 #include <CoreMIDI/CoreMIDI.h>
-
-#include "core/vector.h"
-#include "os/midi_driver.h"
+#include <stdio.h>
 
 class MIDIDriverCoreMidi : public MIDIDriver {
 
@@ -52,6 +51,8 @@ class MIDIDriverCoreMidi : public MIDIDriver {
 public:
 	virtual Error open();
 	virtual void close();
+
+	PoolStringArray get_connected_inputs();
 
 	MIDIDriverCoreMidi();
 	virtual ~MIDIDriverCoreMidi();

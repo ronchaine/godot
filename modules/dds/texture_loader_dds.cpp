@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "texture_loader_dds.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 enum {
 	DDS_MAGIC = 0x20534444,
@@ -108,8 +108,8 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	uint32_t magic = f->get_32();
 	uint32_t hsize = f->get_32();
 	uint32_t flags = f->get_32();
-	uint32_t width = f->get_32();
 	uint32_t height = f->get_32();
+	uint32_t width = f->get_32();
 	uint32_t pitch = f->get_32();
 	/* uint32_t depth = */ f->get_32();
 	uint32_t mipmaps = f->get_32();
@@ -216,8 +216,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	if (!(flags & DDSD_MIPMAPCOUNT))
 		mipmaps = 1;
-
-	//print_line("found format: "+String(dds_format_info[dds_format].name));
 
 	PoolVector<uint8_t> src_data;
 

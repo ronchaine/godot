@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "thread_posix.h"
-#include "script_language.h"
+#include "core/script_language.h"
 
 #if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
 
@@ -37,8 +37,8 @@
 #include <pthread_np.h>
 #endif
 
+#include "core/os/memory.h"
 #include "core/safe_refcount.h"
-#include "os/memory.h"
 
 static pthread_key_t _create_thread_id_key() {
 	pthread_key_t key;
@@ -103,8 +103,6 @@ void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 
 Error ThreadPosix::set_name_func_posix(const String &p_name) {
 
-	pthread_t running_thread = pthread_self();
-
 #ifdef PTHREAD_NO_RENAME
 	return ERR_UNAVAILABLE;
 
@@ -117,6 +115,7 @@ Error ThreadPosix::set_name_func_posix(const String &p_name) {
 
 #else
 
+	pthread_t running_thread = pthread_self();
 #ifdef PTHREAD_BSD_SET_NAME
 	pthread_set_name_np(running_thread, p_name.utf8().get_data());
 	int err = 0; // Open/FreeBSD ignore errors in this function

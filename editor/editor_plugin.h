@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,15 @@
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
+#include "core/io/config_file.h"
+#include "core/undo_redo.h"
 #include "editor/editor_inspector.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/script_create_dialog.h"
-#include "io/config_file.h"
 #include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "undo_redo.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -53,6 +53,7 @@ class EditorExport;
 class EditorSettings;
 class EditorImportPlugin;
 class EditorExportPlugin;
+class EditorSpatialGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
@@ -127,10 +128,12 @@ public:
 	enum CustomControlContainer {
 		CONTAINER_TOOLBAR,
 		CONTAINER_SPATIAL_EDITOR_MENU,
-		CONTAINER_SPATIAL_EDITOR_SIDE,
+		CONTAINER_SPATIAL_EDITOR_SIDE_LEFT,
+		CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT,
 		CONTAINER_SPATIAL_EDITOR_BOTTOM,
 		CONTAINER_CANVAS_EDITOR_MENU,
-		CONTAINER_CANVAS_EDITOR_SIDE,
+		CONTAINER_CANVAS_EDITOR_SIDE_LEFT,
+		CONTAINER_CANVAS_EDITOR_SIDE_RIGHT,
 		CONTAINER_CANVAS_EDITOR_BOTTOM,
 		CONTAINER_PROPERTY_EDITOR_BOTTOM
 	};
@@ -172,9 +175,13 @@ public:
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
-	virtual void forward_draw_over_viewport(Control *p_overlay);
-	virtual void forward_force_draw_over_viewport(Control *p_overlay);
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
+	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
+
 	virtual bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event);
+	virtual void forward_spatial_draw_over_viewport(Control *p_overlay);
+	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay);
+
 	virtual String get_name() const;
 	virtual const Ref<Texture> get_icon() const;
 	virtual bool has_main_screen() const;
@@ -213,6 +220,9 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 
+	void add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
+	void remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
+
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
@@ -225,6 +235,9 @@ public:
 	void set_dir_cache(const String &p_dir) { _dir_cache = p_dir; }
 	String get_dir_cache() { return _dir_cache; }
 	Ref<ConfigFile> get_config();
+
+	void enable_plugin();
+	void disable_plugin();
 
 	EditorPlugin();
 	virtual ~EditorPlugin();

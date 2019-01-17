@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "input_event.h"
 
-#include "input_map.h"
-#include "os/keyboard.h"
+#include "core/input_map.h"
+#include "core/os/keyboard.h"
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
@@ -960,6 +960,22 @@ bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
 bool InputEventAction::is_action(const StringName &p_action) const {
 
 	return action == p_action;
+}
+
+bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+
+	Ref<InputEventAction> act = p_event;
+	if (act.is_null())
+		return false;
+
+	bool match = action == act->action;
+	if (match) {
+		if (p_pressed != NULL)
+			*p_pressed = act->pressed;
+		if (p_strength != NULL)
+			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+	}
+	return match;
 }
 
 String InputEventAction::as_text() const {

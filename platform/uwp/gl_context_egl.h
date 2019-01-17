@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,9 @@
 #include <wrl.h>
 
 #include "EGL/egl.h"
+#include "core/error_list.h"
+#include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-#include "error_list.h"
-#include "os/os.h"
 
 using namespace Windows::UI::Core;
 
@@ -71,8 +71,8 @@ public:
 	virtual int get_window_height();
 	virtual void swap_buffers();
 
-	void set_use_vsync(bool use) { vsync = use; }
-	bool is_using_vsync() const { return vsync; }
+	virtual void set_use_vsync(bool use) { vsync = use; }
+	virtual bool is_using_vsync() const { return vsync; }
 
 	virtual Error initialize();
 	void reset();
@@ -80,7 +80,7 @@ public:
 	void cleanup();
 
 	ContextEGL(CoreWindow ^ p_window, Driver p_driver);
-	~ContextEGL();
+	virtual ~ContextEGL();
 };
 
 #endif

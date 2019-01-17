@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,13 +32,13 @@
 #define OSUWP_H
 
 #include "core/math/transform_2d.h"
+#include "core/os/input.h"
+#include "core/os/os.h"
 #include "core/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "gl_context_egl.h"
 #include "joypad_uwp.h"
 #include "main/input_default.h"
-#include "os/input.h"
-#include "os/os.h"
 #include "power_uwp.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -152,7 +152,7 @@ private:
 	Windows::Devices::Sensors::Magnetometer ^ magnetometer;
 	Windows::Devices::Sensors::Gyrometer ^ gyrometer;
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 protected:
 	virtual int get_video_driver_count() const;
 	virtual int get_current_video_driver() const;

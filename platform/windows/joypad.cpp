@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -163,7 +163,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
 	const GUID &guid = instance->guidProduct;
 	char uid[128];
-	sprintf(uid, "%08lx%04hx%04hx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
+	sprintf_s(uid, "%08lx%04hx%04hx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx",
 			__builtin_bswap32(guid.Data1), guid.Data2, guid.Data3,
 			guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
 			guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
@@ -172,7 +172,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 
 	joy->di_joy->SetDataFormat(&c_dfDIJoystick2);
 	joy->di_joy->SetCooperativeLevel(*hWnd, DISCL_FOREGROUND);
-	joy->di_joy->EnumObjects(objectsCallback, this, NULL);
+	joy->di_joy->EnumObjects(objectsCallback, this, 0);
 	joy->joy_axis.sort();
 
 	joy->guid = instance->guidInstance;
@@ -540,9 +540,7 @@ void JoypadWindows::load_xinput() {
 	}
 
 	if (!xinput_dll) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			print_line("Could not find XInput, using DirectInput only");
-		}
+		print_verbose("Could not find XInput, using DirectInput only");
 		return;
 	}
 

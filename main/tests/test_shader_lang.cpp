@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "test_shader_lang.h"
 
-#include "os/file_access.h"
-#include "os/main_loop.h"
-#include "os/os.h"
+#include "core/os/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
 #include "servers/visual/shader_language.h"
@@ -180,7 +180,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 
 				String scode = dump_node_code(bnode->statements[i], p_level);
 
-				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
+				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
 					code += scode; //use directly
 				} else {
 					code += _mktab(p_level) + scode + ";\n";
@@ -193,6 +193,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			SL::VariableNode *vnode = (SL::VariableNode *)p_node;
 			code = vnode->name;
 
+		} break;
+		case SL::Node::TYPE_VARIABLE_DECLARATION: {
+			// FIXME: Implement
 		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,12 @@
 
 #include "animation_player_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "editor/animation_track_editor.h"
 #include "editor/editor_settings.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/keyboard.h"
-#include "project_settings.h"
 
 // For onion skinning
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -908,7 +908,7 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 	}
 }
 
-void AnimationPlayerEditor::forward_force_draw_over_viewport(Control *p_overlay) {
+void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 
 	if (!onion.can_overlay)
 		return;
@@ -1515,7 +1515,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 
 void AnimationPlayerEditor::_start_onion_skinning() {
 
-	// FIXME: Using "idle_frame" makes onion layers update one frame behing the current
+	// FIXME: Using "idle_frame" makes onion layers update one frame behind the current
 	if (!get_tree()->is_connected("idle_frame", this, "call_deferred")) {
 		get_tree()->connect("idle_frame", this, "call_deferred", varray("_prepare_onion_layers_1"));
 	}

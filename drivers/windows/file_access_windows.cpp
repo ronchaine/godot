@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,13 @@
 #ifdef WINDOWS_ENABLED
 
 #include "file_access_windows.h"
-#include "os/os.h"
-#include "shlwapi.h"
+
+#include "core/os/os.h"
+#include "core/print_string.h"
+
+#include <shlwapi.h>
 #include <windows.h>
 
-#include "print_string.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
@@ -112,7 +114,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		path = path + ".tmp";
 	}
 
-	f = _wfopen(path.c_str(), mode_string);
+	_wfopen_s(&f, path.c_str(), mode_string);
 
 	if (f == NULL) {
 		last_error = ERR_FILE_CANT_OPEN;
@@ -132,11 +134,6 @@ void FileAccessWindows::close() {
 	f = NULL;
 
 	if (save_path != "") {
-
-		//unlink(save_path.utf8().get_data());
-		//print_line("renaming...");
-		//_wunlink(save_path.c_str()); //unlink if exists
-		//int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
 
 		bool rename_error = true;
 		int attempts = 4;
@@ -281,7 +278,7 @@ bool FileAccessWindows::file_exists(const String &p_name) {
 	FILE *g;
 	//printf("opening file %s\n", p_fname.c_str());
 	String filename = fix_path(p_name);
-	g = _wfopen(filename.c_str(), L"rb");
+	_wfopen_s(&g, filename.c_str(), L"rb");
 	if (g == NULL) {
 
 		return false;
@@ -305,17 +302,15 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 
 		return st.st_mtime;
 	} else {
-		print_line("no access to " + file);
+		ERR_EXPLAIN("Failed to get modified time for: " + file);
+		ERR_FAIL_V(0);
 	}
+}
 
-	ERR_FAIL_V(0);
-};
-
-FileAccessWindows::FileAccessWindows() {
-
-	f = NULL;
-	flags = 0;
-	last_error = OK;
+FileAccessWindows::FileAccessWindows() :
+		f(NULL),
+		flags(0),
+		last_error(OK) {
 }
 FileAccessWindows::~FileAccessWindows() {
 

@@ -11,6 +11,14 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="save_to_wav">
+			<return type="void">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data">
@@ -53,6 +61,9 @@
 		</constant>
 		<constant name="LOOP_PING_PONG" value="2" enum="LoopMode">
 			Audio loops the data between loop_begin and loop_end playing back and forth.
+		</constant>
+		<constant name="LOOP_BACKWARD" value="3" enum="LoopMode">
+			Audio loops the data between loop_begin and loop_end playing backward only.
 		</constant>
 	</constants>
 </class>

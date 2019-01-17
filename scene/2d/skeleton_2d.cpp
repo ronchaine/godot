@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -288,7 +288,7 @@ void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);
 
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Skeleton2D::get_bone_count);
-	ClassDB::bind_method(D_METHOD("get_bone"), &Skeleton2D::get_bone);
+	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &Skeleton2D::get_skeleton);
 }
@@ -298,6 +298,7 @@ Skeleton2D::Skeleton2D() {
 	transform_dirty = true;
 
 	skeleton = VS::get_singleton()->skeleton_create();
+	set_notify_transform(true);
 }
 
 Skeleton2D::~Skeleton2D() {

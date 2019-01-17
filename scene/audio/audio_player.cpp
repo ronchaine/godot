@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "audio_player.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
@@ -192,6 +192,7 @@ float AudioStreamPlayer::get_volume_db() const {
 }
 
 void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
+	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
 }
 float AudioStreamPlayer::get_pitch_scale() const {
@@ -218,6 +219,7 @@ void AudioStreamPlayer::seek(float p_seconds) {
 void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid()) {
+		stream_playback->stop();
 		active = false;
 		set_process_internal(false);
 	}

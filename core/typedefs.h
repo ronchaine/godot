@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define TYPEDEFS_H
 
 #include <stddef.h>
+
 /**
  * Basic definitions and simple functions to be used everywhere.
  */
@@ -43,6 +44,7 @@
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 
+//should always inline no matter what
 #ifndef _ALWAYS_INLINE_
 
 #if defined(__GNUC__) && (__GNUC__ >= 4)
@@ -57,8 +59,15 @@
 
 #endif
 
+//should always inline, except in some cases because it makes debugging harder
 #ifndef _FORCE_INLINE_
+
+#ifdef DISABLE_FORCED_INLINE
+#define _FORCE_INLINE_ inline
+#else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
+#endif
+
 #endif
 
 //custom, gcc-safe offsetof, because gcc complains a lot.
@@ -96,19 +105,19 @@ T *_nullptr() {
 #undef CONNECT_DEFERRED // override from Windows SDK, clashes with Object enum
 #endif
 
-#include "int_types.h"
+#include "core/int_types.h"
 
-#include "error_list.h"
-#include "error_macros.h"
+#include "core/error_list.h"
+#include "core/error_macros.h"
 
 /** Generic ABS function, for math uses please use Math::abs */
 
 #ifndef ABS
-#define ABS(m_v) ((m_v < 0) ? (-(m_v)) : (m_v))
+#define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
 
 #ifndef SGN
-#define SGN(m_v) ((m_v < 0) ? (-1.0) : (+1.0))
+#define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
 #endif
 
 #ifndef MIN

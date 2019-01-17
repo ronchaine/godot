@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,14 @@
 
 #include "export_template_manager.h"
 
+#include "core/io/json.h"
+#include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "core/version.h"
 #include "editor_node.h"
 #include "editor_scale.h"
-#include "io/json.h"
-#include "io/zip_io.h"
-#include "os/dir_access.h"
-#include "version.h"
 
 void ExportTemplateManager::_update_template_list() {
 

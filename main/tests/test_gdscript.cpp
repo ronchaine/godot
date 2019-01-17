@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "test_gdscript.h"
 
-#include "os/file_access.h"
-#include "os/main_loop.h"
-#include "os/os.h"
+#include "core/os/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
 
 #ifdef GDSCRIPT_ENABLED
 
@@ -356,6 +356,9 @@ static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_i
 						ERR_FAIL_COND(!cf_node->body);
 						_parser_show_block(cf_node->body, p_indent + 1);
 
+					} break;
+					case GDScriptParser::ControlFlowNode::CF_MATCH: {
+						// FIXME: Implement
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_SWITCH: {
 

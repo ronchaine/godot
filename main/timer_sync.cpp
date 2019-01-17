@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 	int min_typical_steps = typical_physics_steps[0];
 	int max_typical_steps = min_typical_steps + 1;
 
-	// given the past recorded steps and typcial steps to match, calculate bounds for this
+	// given the past recorded steps and typical steps to match, calculate bounds for this
 	// step to be typical
 	bool update_typical = false;
 

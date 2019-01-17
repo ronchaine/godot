@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -193,7 +193,6 @@ private:
 		int line_number_w;
 		int breakpoint_gutter_width;
 		int fold_gutter_width;
-		Size2 size;
 	} cache;
 
 	Map<int, int> color_region_cache;
@@ -307,8 +306,6 @@ private:
 	float target_v_scroll;
 	float v_scroll_speed;
 
-	bool raised_from_completion;
-
 	String highlighted_word;
 
 	uint64_t last_dblclk;
@@ -339,7 +336,7 @@ private:
 	int get_total_visible_rows() const;
 
 	void update_cursor_wrap_offset();
-	void update_wrap_at();
+	void _update_wrap_at();
 	bool line_wraps(int line) const;
 	int times_line_wraps(int line) const;
 	Vector<String> get_wrap_rows_text(int p_line) const;
@@ -373,6 +370,7 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
+	void _uncomment_line(int p_line);
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
 
@@ -381,8 +379,6 @@ private:
 
 	void _scroll_lines_up();
 	void _scroll_lines_down();
-
-	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
 
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
@@ -446,6 +442,7 @@ public:
 		MENU_CLEAR,
 		MENU_SELECT_ALL,
 		MENU_UNDO,
+		MENU_REDO,
 		MENU_MAX
 
 	};

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,13 @@
 
 #include "ustring.h"
 
-#include "color.h"
-#include "math_funcs.h"
-#include "os/memory.h"
-#include "print_string.h"
-#include "ucaps.h"
-#include "variant.h"
+#include "core/color.h"
+#include "core/math/math_funcs.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
+#include "core/translation.h"
+#include "core/ucaps.h"
+#include "core/variant.h"
 
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
@@ -48,7 +49,7 @@
 #endif
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
-#define snprintf _snprintf
+#define snprintf _snprintf_s
 #endif
 
 #define MAX_DIGITS 6
@@ -56,6 +57,9 @@
 #define LOWERCASE(m_c) (((m_c) >= 'A' && (m_c) <= 'Z') ? ((m_c) + ('a' - 'A')) : (m_c))
 #define IS_DIGIT(m_d) ((m_d) >= '0' && (m_d) <= '9')
 #define IS_HEX_DIGIT(m_d) (((m_d) >= '0' && (m_d) <= '9') || ((m_d) >= 'a' && (m_d) <= 'f') || ((m_d) >= 'A' && (m_d) <= 'F'))
+
+const char CharString::_null = 0;
+const CharType String::_null = 0;
 
 bool is_symbol(CharType c) {
 	return c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t' || c == ' ');
@@ -178,7 +182,7 @@ void String::copy_from_unchecked(const CharType *p_char, const int p_length) {
 	resize(p_length + 1);
 	set(p_length, 0);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	for (int i = 0; i < p_length; i++) {
 		dst[i] = p_char[i];
@@ -249,7 +253,7 @@ String &String::operator+=(const String &p_str) {
 	resize(length() + p_str.size());
 
 	const CharType *src = p_str.c_str();
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -288,7 +292,7 @@ String &String::operator+=(const char *p_str) {
 
 	resize(from + src_len + 1);
 
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 
 	set(length(), 0);
 
@@ -585,6 +589,8 @@ String String::camelcase_to_underscore(bool lowercase) const {
 		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
 		bool is_number = cstr[i] >= '0' && cstr[i] <= '9';
 		bool are_next_2_lower = false;
+		bool is_next_lower = false;
+		bool is_next_number = false;
 		bool was_precedent_upper = cstr[i - 1] >= A && cstr[i - 1] <= Z;
 		bool was_precedent_number = cstr[i - 1] >= '0' && cstr[i - 1] <= '9';
 
@@ -592,7 +598,18 @@ String String::camelcase_to_underscore(bool lowercase) const {
 			are_next_2_lower = cstr[i + 1] >= a && cstr[i + 1] <= z && cstr[i + 2] >= a && cstr[i + 2] <= z;
 		}
 
-		bool should_split = ((is_upper && !was_precedent_upper && !was_precedent_number) || (was_precedent_upper && is_upper && are_next_2_lower) || (is_number && !was_precedent_number));
+		if (i + 1 < this->size()) {
+			is_next_lower = cstr[i + 1] >= a && cstr[i + 1] <= z;
+			is_next_number = cstr[i + 1] >= '0' && cstr[i + 1] <= '9';
+		}
+
+		const bool a = is_upper && !was_precedent_upper && !was_precedent_number;
+		const bool b = was_precedent_upper && is_upper && are_next_2_lower;
+		const bool c = is_number && !was_precedent_number;
+		const bool can_break_number_letter = is_number && !was_precedent_number && is_next_lower;
+		const bool can_break_letter_number = !is_number && was_precedent_number && (is_next_lower || is_next_number);
+
+		bool should_split = a || b || c || can_break_number_letter || can_break_letter_number;
 		if (should_split) {
 			new_string += this->substr(start_index, i - start_index) + "_";
 			start_index = i;
@@ -1340,7 +1357,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
 
-#define _UNICERROR(m_err) print_line("unicode error: " + String(m_err));
+#define _UNICERROR(m_err) print_line("Unicode error: " + String(m_err));
 
 	String aux;
 
@@ -1417,7 +1434,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 	}
 
 	resize(str_size + 1);
-	CharType *dst = &operator[](0);
+	CharType *dst = ptrw();
 	dst[str_size] = 0;
 
 	while (cstr_size) {
@@ -1827,8 +1844,8 @@ static double built_in_strtod(const C *string, /* A decimal ASCII floating-point
 	int sign, expSign = false;
 	double fraction, dblExp;
 	const double *d;
-	register const C *p;
-	register int c;
+	const C *p;
+	int c;
 	int exp = 0; /* Exponent read from "EX" field. */
 	int fracExp = 0; /* Exponent that derives from the fractional
 				 * part. Under normal circumstances, it is
@@ -2376,6 +2393,10 @@ int String::find(const char *p_str, int p_from) const {
 	return -1;
 }
 
+int String::find_char(CharType p_char, int p_from) const {
+	return _cowdata.find(p_char, p_from);
+}
+
 int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 
 	if (p_from < 0)
@@ -2760,16 +2781,13 @@ String String::format(const Variant &values, String placeholder) const {
 
 				if (value_arr.size() == 2) {
 					Variant v_key = value_arr[0];
-					String key;
-
-					key = v_key.get_construct_string();
+					String key = v_key;
 					if (key.left(1) == "\"" && key.right(key.length() - 1) == "\"") {
 						key = key.substr(1, key.length() - 2);
 					}
 
 					Variant v_val = value_arr[1];
-					String val;
-					val = v_val.get_construct_string();
+					String val = v_val;
 
 					if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
 						val = val.substr(1, val.length() - 2);
@@ -2781,8 +2799,7 @@ String String::format(const Variant &values, String placeholder) const {
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
 				Variant v_val = values_arr[i];
-				String val;
-				val = v_val.get_construct_string();
+				String val = v_val;
 
 				if (val.left(1) == "\"" && val.right(val.length() - 1) == "\"") {
 					val = val.substr(1, val.length() - 2);
@@ -2801,8 +2818,8 @@ String String::format(const Variant &values, String placeholder) const {
 		d.get_key_list(&keys);
 
 		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-			String key = E->get().get_construct_string();
-			String val = d[E->get()].get_construct_string();
+			String key = E->get();
+			String val = d[E->get()];
 
 			if (key.left(1) == "\"" && key.right(key.length() - 1) == "\"") {
 				key = key.substr(1, key.length() - 2);
@@ -3050,7 +3067,7 @@ String String::lstrip(const String &p_chars) const {
 
 	for (beg = 0; beg < len; beg++) {
 
-		if (p_chars.find(&ptr()[beg]) == -1)
+		if (p_chars.find_char(get(beg)) == -1)
 			break;
 	}
 
@@ -3067,7 +3084,7 @@ String String::rstrip(const String &p_chars) const {
 
 	for (end = len - 1; end >= 0; end--) {
 
-		if (p_chars.find(&ptr()[end]) == -1)
+		if (p_chars.find_char(get(end)) == -1)
 			break;
 	}
 
@@ -3091,7 +3108,7 @@ String String::simplify_path() const {
 	} else if (s.begins_with("user://")) {
 
 		drive = "user://";
-		s = s.substr(6, s.length());
+		s = s.substr(7, s.length());
 	} else if (s.begins_with("/") || s.begins_with("\\")) {
 
 		drive = s.substr(0, 1);
@@ -3466,7 +3483,7 @@ String String::xml_unescape() const {
 	if (len == 0)
 		return String();
 	str.resize(len + 1);
-	_xml_unescape(c_str(), l, &str[0]);
+	_xml_unescape(c_str(), l, str.ptrw());
 	str[len] = 0;
 	return str;
 }
@@ -3568,9 +3585,12 @@ bool String::is_valid_integer() const {
 
 bool String::is_valid_hex_number(bool p_with_prefix) const {
 
-	int from = 0;
 	int len = length();
 
+	if (len == 0)
+		return false;
+
+	int from = 0;
 	if (len != 1 && (operator[](0) == '+' || operator[](0) == '-'))
 		from++;
 
@@ -4025,7 +4045,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					str = str.pad_decimals(min_decimals);
 
 					// Show sign
-					if (show_sign && value >= 0) {
+					if (show_sign && str.left(1) != "-") {
 						str = str.insert(0, "+");
 					}
 
@@ -4203,8 +4223,6 @@ String String::unquote() const {
 
 	return substr(1, length() - 2);
 }
-
-#include "translation.h"
 
 #ifdef TOOLS_ENABLED
 String TTR(const String &p_text) {

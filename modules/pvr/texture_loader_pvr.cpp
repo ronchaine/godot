@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "texture_loader_pvr.h"
 #include "PvrTcEncoder.h"
 #include "RgbaBitmap.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include <string.h>
 
 static void _pvrtc_decompress(Image *p_img);
@@ -93,7 +93,7 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	print_line("bmask: "+itos(bmask));
 	print_line("amask: "+itos(amask));
 	print_line("surfcount: "+itos(surfcount));
-*/
+	*/
 
 	PoolVector<uint8_t> data;
 	data.resize(surfsize);
@@ -158,8 +158,6 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 
 	if (mipmaps)
 		tex_flags |= Texture::FLAG_MIPMAPS;
-
-	print_line("flip: " + itos(flags & PVR_VFLIP));
 
 	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
 	ERR_FAIL_COND_V(image->empty(), RES());
@@ -646,12 +644,6 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 static void _pvrtc_decompress(Image *p_img) {
 
-	/*
-	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
-		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
-	}
-	*/
-
 	ERR_FAIL_COND(p_img->get_format() != Image::FORMAT_PVRTC2 && p_img->get_format() != Image::FORMAT_PVRTC2A && p_img->get_format() != Image::FORMAT_PVRTC4 && p_img->get_format() != Image::FORMAT_PVRTC4A);
 
 	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC2 || p_img->get_format() == Image::FORMAT_PVRTC2A);
@@ -664,12 +656,6 @@ static void _pvrtc_decompress(Image *p_img) {
 	PoolVector<uint8_t>::Write w = newdata.write();
 
 	decompress_pvrtc((PVRTCBlock *)r.ptr(), _2bit, p_img->get_width(), p_img->get_height(), 0, (unsigned char *)w.ptr());
-
-	/*
-	for(int i=0;i<newdata.size();i++) {
-		print_line(itos(w[i]));
-	}
-	*/
 
 	w = PoolVector<uint8_t>::Write();
 	r = PoolVector<uint8_t>::Read();

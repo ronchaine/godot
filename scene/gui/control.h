@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include "rid.h"
+#include "core/math/transform_2d.h"
+#include "core/rid.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
-#include "transform_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -76,7 +76,7 @@ public:
 		SIZE_EXPAND = 2,
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 		SIZE_SHRINK_CENTER = 4, //ignored by expand or fill
-		SIZE_SHRINK_END = 8, //ignored by expand or fil
+		SIZE_SHRINK_END = 8, //ignored by expand or fill
 
 	};
 

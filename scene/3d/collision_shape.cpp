@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,9 +38,9 @@
 #include "scene/resources/sphere_shape.h"
 #include "servers/visual_server.h"
 //TODO: Implement CylinderShape and HeightMapShape?
+#include "core/math/quick_hull.h"
 #include "mesh_instance.h"
 #include "physics_body.h"
-#include "quick_hull.h"
 
 void CollisionShape::make_convex_from_brothers() {
 

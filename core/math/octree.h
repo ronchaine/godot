@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,12 @@
 #ifndef OCTREE_H
 #define OCTREE_H
 
-#include "aabb.h"
-#include "list.h"
-#include "map.h"
-#include "print_string.h"
-#include "variant.h"
-#include "vector3.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/math/aabb.h"
+#include "core/math/vector3.h"
+#include "core/print_string.h"
+#include "core/variant.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -478,7 +478,7 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 					splits++;
 				}
 			} else {
-				/* check againt AABB where child should be */
+				/* check against AABB where child should be */
 
 				AABB aabb = p_octant->aabb;
 				aabb.size *= 0.5;

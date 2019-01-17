@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,8 @@
 #ifdef COREMIDI_ENABLED
 
 #include "core_midi.h"
-#include "print_string.h"
+
+#include "core/print_string.h"
 
 #include <CoreAudio/HostTime.h>
 #include <CoreServices/CoreServices.h>
@@ -50,13 +51,13 @@ Error MIDIDriverCoreMidi::open() {
 	OSStatus result = MIDIClientCreate(name, NULL, NULL, &client);
 	CFRelease(name);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIClientCreate failed: " + String(GetMacOSStatusErrorString(result)));
+		ERR_PRINTS("MIDIClientCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 
 	result = MIDIInputPortCreate(client, CFSTR("Godot Input"), MIDIDriverCoreMidi::read, (void *)this, &port_in);
 	if (result != noErr) {
-		ERR_PRINTS("MIDIInputPortCreate failed: " + String(GetMacOSStatusErrorString(result)));
+		ERR_PRINTS("MIDIInputPortCreate failed, code: " + itos(result));
 		return ERR_CANT_OPEN;
 	}
 
@@ -64,7 +65,7 @@ Error MIDIDriverCoreMidi::open() {
 	for (int i = 0; i < sources; i++) {
 
 		MIDIEndpointRef source = MIDIGetSource(i);
-		if (source != NULL) {
+		if (source) {
 			MIDIPortConnectSource(port_in, source, (void *)this);
 			connected_sources.insert(i, source);
 		}
@@ -92,13 +93,30 @@ void MIDIDriverCoreMidi::close() {
 	}
 }
 
-MIDIDriverCoreMidi::MIDIDriverCoreMidi() {
+PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
 
-	client = 0;
+	PoolStringArray list;
+
+	for (int i = 0; i < connected_sources.size(); i++) {
+		MIDIEndpointRef source = connected_sources[i];
+		CFStringRef ref = NULL;
+		char name[256];
+
+		MIDIObjectGetStringProperty(source, kMIDIPropertyDisplayName, &ref);
+		CFStringGetCString(ref, name, sizeof(name), kCFStringEncodingUTF8);
+		CFRelease(ref);
+
+		list.push_back(name);
+	}
+
+	return list;
+}
+
+MIDIDriverCoreMidi::MIDIDriverCoreMidi() :
+		client(0) {
 }
 
 MIDIDriverCoreMidi::~MIDIDriverCoreMidi() {
-
 	close();
 }
 

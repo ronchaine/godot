@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,6 +86,10 @@ void BodySW::update_inertias() {
 			inertia_tensor.set_zero();
 
 			for (int i = 0; i < get_shape_count(); i++) {
+
+				if (is_shape_disabled(i)) {
+					continue;
+				}
 
 				const ShapeSW *shape = get_shape(i);
 
@@ -755,10 +759,10 @@ void BodySW::set_kinematic_margin(real_t p_margin) {
 
 BodySW::BodySW() :
 		CollisionObjectSW(TYPE_BODY),
+		locked_axis(0),
 		active_list(this),
 		inertia_update_list(this),
-		direct_state_query_list(this),
-		locked_axis(0) {
+		direct_state_query_list(this) {
 
 	mode = PhysicsServer::BODY_MODE_RIGID;
 	active = true;

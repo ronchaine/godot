@@ -19,7 +19,7 @@ comments.
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: git (d05ad4b, 2017)
+- Version: git (126b676, 2018-12-31)
 - License: zlib
 
 Files extracted from upstream source:
@@ -31,13 +31,24 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://apps.fedoraproject.org/packages/ca-certificates
-- Version: 2018.2.22
+- Version: 2018.2.26
 - License: MPL 2.0
 
 File extracted from a recent Fedora install:
 /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
 (It can't be extracted directly from the package,
 as it's generated on the user's system.)
+
+
+## cvtt
+
+- Upstream: https://github.com/elasota/cvtt
+- Version: 1.0.0-beta4
+- License: MIT
+
+Files extracted from upstream source:
+
+- all .cpp, .h, and .txt files in ConvectionKernels/
 
 
 ## enet
@@ -117,7 +128,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 0.1.25
+- Version: 0.1.28
 - License: MIT
 
 The files we package are automatically generated.
@@ -218,11 +229,14 @@ TODO.
 Important: File `libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c` has
 Godot-made change marked with `// -- GODOT --` comments.
 
+The files `libvpx/third_party/android/cpu-features.{c,h}` were copied
+from the Android NDK r18.
+
 
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.0
+- Version: 1.0.1
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -253,8 +267,8 @@ File extracted from upstream source:
     - From `roles/ws` exclude `ext` folder.
   - From `tls` exclude `openssl` folder.
 - Also copy `win32helpers/` from `win32port/` inside `thirdparty/libwebsockets`
-- A small fix has been added in `libwebsockets/libwebsockets.h` to `#include <sys/socket.h>` for the BSD family.
-  This change has been PRed upstream, and should be merged before the next update. Remember to check and remove this line.
+- A fix has been added to allow building for 32-bits UWP, replacing `GetFileSize[Ex]` and `CreateFileW` with supported functions.
+  There is a diff for this change in `thirdparty/libwebsockets/uwp_fixes.diff`
 
 Important: `lws_config.h` and `lws_config_private.h` contains custom
 Godot build configurations, check them out when updating.
@@ -326,6 +340,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: http://www.efgh.com/software/md5.htm
   * Version: TBD, might not be latest from above URL
   * License: RSA Message-Digest License
+- `open-simplex-noise.{c,h}`
+  * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
+  * Version: git (0d555e7, 2015)
+  * License: Unlicense
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
@@ -355,8 +373,19 @@ Collection of single-file libraries used in Godot components.
   * Version: ?
   * License: BSD
 
+### platform
+
+- `ifaddrs-android.{cc,h}`
+  * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
+  * Version: 5976650 (2013)
+  * License: BSD-3-Clause
+
 ### scene
 
+- `easing_equations.cpp`
+  * Upstream: http://robertpenner.com/easing/ via https://github.com/jesusgollonet/ofpennereasing (modified to fit Godot types)
+  * Version: git (af72c14, 2008) + Godot types and style changes
+  * License: BSD-3-Clause
 - `mikktspace.{c,h}`
   * Upstream: https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps
   * Version: 1.0
@@ -483,7 +512,7 @@ changes are marked with `// -- GODOT --` comments.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: git (e385dad, 2018)
+- Version: git (5ae30aa, 2018)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -505,7 +534,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.4
+- Version: 1.3.8
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

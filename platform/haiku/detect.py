@@ -37,14 +37,14 @@ def configure(env):
     ## Build type
 
     if (env["target"] == "release"):
-        env.Prepend(CCFLAGS=['-O3', '-ffast-math'])
+        env.Prepend(CCFLAGS=['-O3'])
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
             env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "release_debug"):
-        env.Prepend(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
+        env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
@@ -148,7 +148,7 @@ def configure(env):
     ## Flags
 
     env.Append(CPPPATH=['#platform/haiku'])
-    env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_GL'])
+    env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
     env.Append(CPPFLAGS=['-DMEDIA_KIT_ENABLED'])
     # env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
     env.Append(CPPFLAGS=['-DPTHREAD_NO_RENAME'])  # TODO: enable when we have pthread_setname_np
